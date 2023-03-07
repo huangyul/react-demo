@@ -1,111 +1,81 @@
-import { Component } from 'react'
+import { Component, useState } from 'react'
 
-class TodoInput extends Component {
-  constructor(props) {
-    super(props)
-    this.handleChange = this.handleChange.bind(this)
-    this.handleClick = this.handleClick.bind(this)
+function TodoInput(props) {
+  const [inputValue, setInputValue] = useState('')
+  const handleClick = () => {
+    props.addItem()
   }
-  handleClick() {
-    this.props.addItem()
+  const handleChange = (e) => {
+    setInputValue(e.target.value)
+    props.onHandleChange(e.target.value)
   }
-  handleChange(e) {
-    this.props.onHandleChange(e.target.value)
-  }
-  render() {
-    const inputValue = this.props.value
-    return (
-      <div>
-        <input value={inputValue} onChange={this.handleChange} />
-        <button onClick={this.handleClick}>Add</button>
-      </div>
-    )
-  }
+  return (
+    <div>
+      <input value={inputValue} onChange={handleChange}></input>
+      <button onClick={handleClick}>Add</button>
+    </div>
+  )
 }
 
-class TodoItem extends Component {
-  constructor(props) {
-    super(props)
-    this.handleDelete = this.handleDelete.bind(this)
+function TodoItem(props) {
+  const handleDelete = () => {
+    props.onDelete(props.value)
   }
-  handleDelete() {
-    this.props.onDelete(this.props.value)
-  }
-  render() {
-    return (
-      <li>
-        {this.props.label}
-        <button onClick={this.handleDelete}>delete</button>
-      </li>
-    )
-  }
+  return (
+    <li>
+      {props.label}
+      <button onClick={handleDelete}>delete</button>
+    </li>
+  )
 }
 
-class TodoList extends Component {
-  render() {
-    const list = this.props.list.map((i) => (
-      <TodoItem
-        key={i.value}
-        label={i.label}
-        value={i.value}
-        onDelete={this.props.onDelete}
-      ></TodoItem>
-    ))
-    return (
-      <div>
-        <ul>{list}</ul>
-      </div>
-    )
-  }
+function TodoList(props) {
+  const list = props.list.map((i) => (
+    <TodoItem
+      key={i.value}
+      label={i.label}
+      value={i.value}
+      onDelete={props.onDelete}
+    ></TodoItem>
+  ))
+  return (
+    <div>
+      <ul>{list}</ul>
+    </div>
+  )
 }
-class Todo extends Component {
-  constructor(props) {
-    super(props)
-    this.onHandleChange = this.onHandleChange.bind(this)
-    this.addItem = this.addItem.bind(this)
-    this.handleDelete = this.handleDelete.bind(this)
-    this.state = {
-      value: '',
-      list: [
-        { value: 999, label: 'aaa' },
-        { value: 888, label: 'bbb' },
-      ],
-      id: 1,
+
+function Todo(props) {
+  const [value, setValue] = useState('')
+  const [list, setList] = useState([
+    { value: 999, label: 'aaa' },
+    { value: 888, label: 'bbb' },
+  ])
+  const [id, setId] = useState(1)
+  const onHandleChange = (val) => {
+    setValue(val)
+  }
+  const addItem = () => {
+    if (value) {
+      setList([...list, { value: id, label: value }])
+      setId(id + 1)
+      setValue('')
     }
   }
-  onHandleChange(value) {
-    this.setState({ value: value })
+  const handleDelete = (value) => {
+    const res = list.filter((i) => i.value !== value)
+    setList([...res])
   }
-  addItem() {
-    if (this.state.value) {
-      this.setState((state) => ({
-        list: [...state.list, { value: state.id++, label: state.value }],
-        value: '',
-      }))
-    }
-  }
-  handleDelete(value) {
-    console.log(value)
-    this.setState((state) => ({
-      list: state.list.filter((i) => i.value !== value),
-    }))
-  }
-
-  render() {
-    return (
-      <div>
-        <TodoInput
-          value={this.state.value}
-          onHandleChange={this.onHandleChange}
-          addItem={this.addItem}
-        ></TodoInput>
-        <TodoList
-          list={this.state.list}
-          onDelete={this.handleDelete}
-        ></TodoList>
-      </div>
-    )
-  }
+  return (
+    <div>
+      <TodoInput
+        value={value}
+        onHandleChange={onHandleChange}
+        addItem={addItem}
+      ></TodoInput>
+      <TodoList list={list} onDelete={handleDelete}></TodoList>
+    </div>
+  )
 }
 
 export default Todo
